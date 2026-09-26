@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-installer:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -15,16 +15,19 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Package and Config
+      - name: Create Package JSON and Main Script
+        shell: pwsh
         run: |
-          cat << 'EOF' > package.json
+          @'
           {
             "name": "gegedigi-studio",
             "productName": "GegeDigi Studio",
             "version": "1.0.0",
             "main": "main.js",
+            "author": "gegedigi",
+            "description": "GegeDigi Image Studio Tool",
             "scripts": {
-              "build": "electron-builder --win nsis"
+              "dist": "electron-builder --win --x64"
             },
             "build": {
               "appId": "com.gegedigi.studio",
@@ -34,15 +37,15 @@ jobs:
               "nsis": {
                 "oneClick": true,
                 "perMachine": false,
-                "allowToChangeInstallationDirectory": false,
                 "createDesktopShortcut": true,
                 "createStartMenuShortcut": true,
                 "runAfterFinish": true
               }
             }
           }
-          EOF
-          cat << 'EOF' > main.js
+          '@ | Set-Content -Path package.json -Encoding utf8
+
+          @'
           const { app, BrowserWindow } = require('electron');
           function createWindow () {
             const win = new BrowserWindow({
@@ -56,18 +59,20 @@ jobs:
           app.on('window-all-closed', () => {
             if (process.platform !== 'darwin') app.quit();
           });
-          EOF
+          '@ | Set-Content -Path main.js -Encoding utf8
 
       - name: Install Dependencies
+        shell: pwsh
         run: |
           npm install electron@28.2.0 electron-builder@24.13.3 --save-dev
 
-      - name: Build Single Setup Exe
+      - name: Build Installer
+        shell: pwsh
         run: |
-          npm run build
+          npm run dist
 
       - name: Upload Single Setup Installer
         uses: actions/upload-artifact@v4
         with:
-          name: GegeDigi-Studio-Setup-Installer
+          name: GegeDigi-Studio-Setup
           path: dist/*.exe
