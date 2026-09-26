@@ -1,10 +1,10 @@
-name: Build Windows Exe
+name: Build Windows Single Installer
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build-installer:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -15,13 +15,31 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Electron Files
+      - name: Setup Package and Config
         run: |
           cat << 'EOF' > package.json
           {
-            "name": "gegedigi-image-tools",
+            "name": "gegedigi-studio",
+            "productName": "GegeDigi Studio",
             "version": "1.0.0",
-            "main": "main.js"
+            "main": "main.js",
+            "scripts": {
+              "build": "electron-builder --win nsis"
+            },
+            "build": {
+              "appId": "com.gegedigi.studio",
+              "win": {
+                "target": "nsis"
+              },
+              "nsis": {
+                "oneClick": true,
+                "perMachine": false,
+                "allowToChangeInstallationDirectory": false,
+                "createDesktopShortcut": true,
+                "createStartMenuShortcut": true,
+                "runAfterFinish": true
+              }
+            }
           }
           EOF
           cat << 'EOF' > main.js
@@ -40,22 +58,16 @@ jobs:
           });
           EOF
 
-      - name: Install Packager
+      - name: Install Dependencies
         run: |
-          npm install electron@28.2.0 @electron/packager@18.3.1 --save-dev
+          npm install electron@28.2.0 electron-builder@24.13.3 --save-dev
 
-      - name: Build Windows Executable
+      - name: Build Single Setup Exe
         run: |
-          npx @electron/packager . "GegeDigi-Studio" --platform=win32 --arch=x64 --out=dist --overwrite
+          npm run build
 
-      - name: Archive to ZIP
-        run: |
-          cd dist
-          zip -r ../GegeDigi-Studio-Windows.zip GegeDigi-Studio-win32-x64/
-          cd ..
-
-      - name: Upload Artifact
+      - name: Upload Single Setup Installer
         uses: actions/upload-artifact@v4
         with:
-          name: GegeDigi-Studio-Windows-Exe
-          path: GegeDigi-Studio-Windows.zip
+          name: GegeDigi-Studio-Setup-Installer
+          path: dist/*.exe
