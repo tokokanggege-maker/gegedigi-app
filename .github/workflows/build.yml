@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-installer:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -15,37 +15,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Create Package JSON and Main Script
-        shell: pwsh
+      - name: Install System NSIS
         run: |
-          @'
+          sudo apt-get update
+          sudo apt-get install -y nsis
+
+      - name: Setup Electron Files
+        run: |
+          cat << 'EOF' > package.json
           {
             "name": "gegedigi-studio",
-            "productName": "GegeDigi Studio",
             "version": "1.0.0",
-            "main": "main.js",
-            "author": "gegedigi",
-            "description": "GegeDigi Image Studio Tool",
-            "scripts": {
-              "dist": "electron-builder --win --x64"
-            },
-            "build": {
-              "appId": "com.gegedigi.studio",
-              "win": {
-                "target": "nsis"
-              },
-              "nsis": {
-                "oneClick": true,
-                "perMachine": false,
-                "createDesktopShortcut": true,
-                "createStartMenuShortcut": true,
-                "runAfterFinish": true
-              }
-            }
+            "main": "main.js"
           }
-          '@ | Set-Content -Path package.json -Encoding utf8
-
-          @'
+          EOF
+          cat << 'EOF' > main.js
           const { app, BrowserWindow } = require('electron');
           function createWindow () {
             const win = new BrowserWindow({
@@ -59,20 +43,43 @@ jobs:
           app.on('window-all-closed', () => {
             if (process.platform !== 'darwin') app.quit();
           });
-          '@ | Set-Content -Path main.js -Encoding utf8
+          EOF
 
-      - name: Install Dependencies
-        shell: pwsh
+      - name: Build Electron App
         run: |
-          npm install electron@28.2.0 electron-builder@24.13.3 --save-dev
+          npm install electron@28.2.0 @electron/packager@18.3.1 --save-dev
+          npx @electron/packager . "GegeDigi-Studio" --platform=win32 --arch=x64 --out=dist --overwrite
 
-      - name: Build Installer
-        shell: pwsh
+      - name: Create One-Click Installer Script
         run: |
-          npm run dist
+          cat << 'EOF' > installer.nsi
+          !include "MUI2.nsh"
+
+          Name "GegeDigi Studio"
+          OutFile "GegeDigi-Studio-Setup.exe"
+          InstallDir "$LOCALAPPDATA\GegeDigiStudio"
+          RequestExecutionLevel user
+
+          !define MUI_ABORTWARNING
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath "$INSTDIR"
+            File /r "dist/GegeDigi-Studio-win32-x64/*.*"
+            CreateShortcut "$DESKTOP\GegeDigi Studio.lnk" "$INSTDIR\GegeDigi-Studio.exe"
+            CreateDirectory "$SMPROGRAMS\GegeDigi Studio"
+            CreateShortcut "$SMPROGRAMS\GegeDigi Studio\GegeDigi Studio.lnk" "$INSTDIR\GegeDigi-Studio.exe"
+            Exec '"$INSTDIR\GegeDigi-Studio.exe"'
+          SectionEnd
+          EOF
+
+      - name: Compile NSIS Installer
+        run: |
+          makensis installer.nsi
 
       - name: Upload Single Setup Installer
         uses: actions/upload-artifact@v4
         with:
           name: GegeDigi-Studio-Setup
-          path: dist/*.exe
+          path: GegeDigi-Studio-Setup.exe
