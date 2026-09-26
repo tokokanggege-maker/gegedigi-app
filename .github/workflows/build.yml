@@ -1,0 +1,53 @@
+name: Build Windows Exe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Electron Project
+        shell: bash
+        run: |
+          npm init -y
+          npm install electron electron-packager --save-dev
+          cat << 'EOF' > main.js
+          const { app, BrowserWindow } = require('electron');
+          function createWindow () {
+            const win = new BrowserWindow({
+              width: 1000,
+              height: 750,
+              autoHideMenuBar: true
+            });
+            win.loadFile('index.html');
+          }
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => {
+            if (process.platform !== 'darwin') app.quit();
+          });
+          EOF
+
+      - name: Package to EXE
+        shell: bash
+        run: |
+          npx electron-packager . "GegeDigi-Image-Tools" --platform=win32 --arch=x64 --out=dist --overwrite
+
+      - name: Compress Output to ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/GegeDigi-Image-Tools-win32-x64 -DestinationPath GegeDigi-Image-Tools-Windows.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GegeDigi-Windows-Exe
+          path: GegeDigi-Image-Tools-Windows.zip
