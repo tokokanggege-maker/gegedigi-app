@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -15,17 +15,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Project & Main Script
-        shell: pwsh
+      - name: Setup Electron Files
         run: |
-          npm init -y
-          npm install electron electron-packager --save-dev
-          @'
+          cat << 'EOF' > package.json
+          {
+            "name": "gegedigi-image-tools",
+            "version": "1.0.0",
+            "main": "main.js"
+          }
+          EOF
+          cat << 'EOF' > main.js
           const { app, BrowserWindow } = require('electron');
           function createWindow () {
             const win = new BrowserWindow({
-              width: 1000,
-              height: 750,
+              width: 1200,
+              height: 800,
               autoHideMenuBar: true
             });
             win.loadFile('index.html');
@@ -34,20 +38,24 @@ jobs:
           app.on('window-all-closed', () => {
             if (process.platform !== 'darwin') app.quit();
           });
-          '@ | Out-File -FilePath main.js -Encoding utf8
+          EOF
 
-      - name: Package to EXE
-        shell: pwsh
+      - name: Install Packager
         run: |
-          npx electron-packager . "GegeDigi-Image-Tools" --platform=win32 --arch=x64 --out=dist --overwrite
+          npm install electron@28.2.0 @electron/packager@18.3.1 --save-dev
 
-      - name: Compress Output to ZIP
-        shell: pwsh
+      - name: Build Windows Executable
         run: |
-          Compress-Archive -Path dist/GegeDigi-Image-Tools-win32-x64 -DestinationPath GegeDigi-Image-Tools-Windows.zip
+          npx @electron/packager . "GegeDigi-Studio" --platform=win32 --arch=x64 --out=dist --overwrite
+
+      - name: Archive to ZIP
+        run: |
+          cd dist
+          zip -r ../GegeDigi-Studio-Windows.zip GegeDigi-Studio-win32-x64/
+          cd ..
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GegeDigi-Windows-Exe
-          path: GegeDigi-Image-Tools-Windows.zip
+          name: GegeDigi-Studio-Windows-Exe
+          path: GegeDigi-Studio-Windows.zip
