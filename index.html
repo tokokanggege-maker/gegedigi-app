@@ -3,102 +3,353 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GegeDigi Image Utility</title>
+  <title>GegeDigi Ultra Studio - Utilitas Gambar Desktop</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
-  <header class="bg-blue-600 text-white p-4 shadow-md">
-    <div class="max-w-4xl mx-auto flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-bold tracking-wide">gegedigi.com</h1>
-        <p class="text-xs text-blue-100">Utilitas Gambar Cepat & Offline</p>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Header / App Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/20">
+        G
       </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-extrabold text-base tracking-tight text-white">gegedigi<span class="text-blue-400">.com</span></h1>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-wider">Ultra Studio</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Editor & Kompresor Gambar Multi-Format Cepat</p>
+      </div>
+    </div>
+
+    <!-- Tombol Upload Utama di Navbar -->
+    <div class="flex items-center gap-3">
+      <input type="file" id="fileInput" accept="image/*" class="hidden" />
+      <button id="navUploadBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/30 flex items-center gap-2 transition active:scale-95">
+        <span class="text-sm">📁</span>
+        <span>Pilih Foto dari Komputer</span>
+      </button>
+      <span class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold hidden sm:inline-flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Mode Offline
+      </span>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto p-4 flex-1 w-full">
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 class="text-lg font-bold mb-4 text-slate-800">Pengubah & Pengompres Gambar Instan</h2>
+  <!-- Workspace -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer mb-6" id="dropArea">
-        <input type="file" id="fileInput" accept="image/*" class="hidden" />
-        <p class="text-slate-600 font-medium">Klik di sini atau seret foto ke dalam kotak</p>
-        <p class="text-xs text-slate-400 mt-1">Mendukung format JPG, PNG, WebP</p>
-      </div>
+    <!-- Kolom Kiri: Canvas & Tools Cepat (8 Kolom) -->
+    <div class="lg:col-span-8 flex flex-col bg-slate-900/60 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+      
+      <!-- Toolbar Cepat Transformasi -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400 font-semibold text-[11px] uppercase tracking-wider">Aksi Cepat:</span>
+          <button id="btnRotate" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1 font-medium">
+            <span>🔄</span> Putar 90°
+          </button>
+          <button id="btnFlipH" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1 font-medium">
+            <span>↔️</span> Flip Horizontal
+          </button>
+          <button id="btnReset" class="p-2 rounded-lg bg-slate-800/80 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition font-medium">
+            Reset Efek
+          </button>
+        </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Format Output</label>
-          <select id="formatSelect" class="w-full border rounded-lg p-2 text-sm bg-white">
-            <option value="image/jpeg">JPG / JPEG</option>
-            <option value="image/png">PNG</option>
-            <option value="image/webp">WebP (Ukuran Paling Ringan)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Lebar Baru (Pixel)</label>
-          <input type="number" id="widthInput" placeholder="Sesuai Asli" class="w-full border rounded-lg p-2 text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Kualitas: <span id="qualityLabel">80%</span></label>
-          <input type="range" id="qualityRange" min="10" max="100" value="80" class="w-full accent-blue-600 mt-2" />
+        <div id="badgeSavings" class="hidden text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          Hemat 0%
         </div>
       </div>
 
-      <div id="previewContainer" class="hidden border-t pt-4">
-        <div class="flex flex-col sm:flex-row gap-4 items-center mb-4">
-          <img id="imagePreview" class="max-h-48 rounded border shadow-sm object-contain" />
-          <div class="text-sm space-y-1">
-            <p><strong>Ukuran Asli:</strong> <span id="origSize">-</span></p>
-            <p><strong>Ukuran Baru:</strong> <span id="newSize" class="text-emerald-600 font-semibold">-</span></p>
+      <!-- Area Tampilan Gambar (Fixed Aspect-Ratio, Tidak Melar) -->
+      <div class="flex-1 min-h-[380px] bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center justify-center p-4 relative overflow-hidden group">
+        
+        <!-- Placeholder Kotak Upload Jika Belum Ada Gambar -->
+        <div id="dropZone" class="text-center p-8 max-w-sm cursor-pointer border-2 border-dashed border-slate-800 hover:border-blue-500/70 rounded-2xl transition-all">
+          <div class="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto mb-3 text-3xl group-hover:scale-110 transition-transform">
+            🖼️
+          </div>
+          <h3 class="font-bold text-white text-sm">Tarik & Lepas Foto ke Sini</h3>
+          <p class="text-xs text-slate-400 mt-1 mb-4">Mendukung format JPG, PNG, WebP beresolusi tinggi</p>
+          <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow transition">
+            Jelajahi File
+          </button>
+        </div>
+
+        <canvas id="studioCanvas" class="max-h-[460px] max-w-full rounded-xl object-contain shadow-2xl hidden"></canvas>
+      </div>
+
+      <!-- Statistik Detail File -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-xs">
+        <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
+          <span class="text-slate-500 block text-[10px]">Ukuran Asli</span>
+          <span id="statOrigSize" class="font-bold text-slate-300">-</span>
+        </div>
+        <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
+          <span class="text-slate-500 block text-[10px]">Ukuran Terkompresi</span>
+          <span id="statNewSize" class="font-bold text-blue-400">-</span>
+        </div>
+        <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
+          <span class="text-slate-500 block text-[10px]">Dimensi Gambar</span>
+          <span id="statDimensions" class="font-bold text-slate-300">-</span>
+        </div>
+        <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
+          <span class="text-slate-500 block text-[10px]">Format Output</span>
+          <span id="statFormat" class="font-bold text-indigo-400">WebP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan: Panel Kontrol Lengkap (4 Kolom) -->
+    <div class="lg:col-span-4 space-y-4 custom-scrollbar max-h-[85vh] overflow-y-auto pr-1">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-5 space-y-5">
+        
+        <!-- Preset Dimensi E-Commerce & Media Sosial -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Preset Ukuran Cepat</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button onclick="applyRatioPreset(800, 800)" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 text-left transition">
+              <span class="font-bold block text-white">🛍️ 1:1 Marketplace</span>
+              <span class="text-[10px] text-slate-400">800 × 800 px</span>
+            </button>
+            <button onclick="applyRatioPreset(1920, 1080)" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 text-left transition">
+              <span class="font-bold block text-white">🖥️ 16:9 Banner</span>
+              <span class="text-[10px] text-slate-400">1920 × 1080 px</span>
+            </button>
+            <button onclick="applyRatioPreset(1080, 1920)" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 text-left transition">
+              <span class="font-bold block text-white">📱 9:16 Story / TikTok</span>
+              <span class="text-[10px] text-slate-400">1080 × 1920 px</span>
+            </button>
+            <button onclick="applyRatioPreset(0, 0)" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 text-left transition">
+              <span class="font-bold block text-white">🔄 Rasio Asli</span>
+              <span class="text-[10px] text-slate-400">Sesuai Resolusi Foto</span>
+            </button>
           </div>
         </div>
 
-        <button id="downloadBtn" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition shadow">
-          Unduh Hasil Gambar
+        <!-- Format & Kualitas Kompresi -->
+        <div class="pt-3 border-t border-slate-800">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Format Berkas</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="setFormat('image/webp')" id="btnFmtWebp" class="py-2 text-xs font-bold rounded-xl border border-blue-500 bg-blue-600/20 text-blue-300">WebP</button>
+            <button onclick="setFormat('image/jpeg')" id="btnFmtJpg" class="py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400">JPG</button>
+            <button onclick="setFormat('image/png')" id="btnFmtPng" class="py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400">PNG</button>
+          </div>
+
+          <div class="mt-4">
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-slate-400">Tingkat Kompresi Kualitas</span>
+              <span id="lblQuality" class="text-blue-400">80%</span>
+            </div>
+            <input type="range" id="inputQuality" min="10" max="100" value="80" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+        </div>
+
+        <!-- Pencahayaan & Kontras -->
+        <div class="pt-3 border-t border-slate-800 space-y-3">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Pencahayaan & Filter</label>
+          <div>
+            <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+              <span>Kecerahan (Brightness)</span>
+              <span id="lblBrightness">100%</span>
+            </div>
+            <input type="range" id="inputBrightness" min="50" max="150" value="100" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+              <span>Kontras (Contrast)</span>
+              <span id="lblContrast">100%</span>
+            </div>
+            <input type="range" id="inputContrast" min="50" max="150" value="100" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-xs text-slate-300 font-medium">Hitam & Putih (Monokrom)</span>
+            <input type="checkbox" id="chkGrayscale" class="w-4 h-4 accent-blue-600 rounded cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Watermark Branding Teks -->
+        <div class="pt-3 border-t border-slate-800 space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Watermark / Hak Cipta</label>
+          <input type="text" id="inputWatermark" placeholder="Teks Watermark (contoh: gegedigi.com)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500" />
+        </div>
+
+        <!-- Tombol Download Final -->
+        <button id="btnDownload" disabled class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold py-3.5 px-6 rounded-2xl transition shadow-xl shadow-blue-600/20 text-xs sm:text-sm flex items-center justify-center gap-2">
+          <span>💾 Simpan & Unduh Hasil</span>
         </button>
+
       </div>
     </div>
   </main>
 
-  <footer class="text-center text-xs text-slate-400 py-4">
-    Aplikasi Desktop gegedigi.com - Proses 100% lokal tanpa upload ke internet
-  </footer>
-
   <script>
+    let activeImage = null;
+    let outFormat = 'image/webp';
+    let targetWidth = 0, targetHeight = 0;
+    let rotationDeg = 0;
+    let isFlipped = false;
+    let finalBlob = null;
+
     const fileInput = document.getElementById('fileInput');
-    const dropArea = document.getElementById('dropArea');
-    const formatSelect = document.getElementById('formatSelect');
-    const widthInput = document.getElementById('widthInput');
-    const qualityRange = document.getElementById('qualityRange');
-    const qualityLabel = document.getElementById('qualityLabel');
-    const previewContainer = document.getElementById('previewContainer');
-    const imagePreview = document.getElementById('imagePreview');
-    const origSize = document.getElementById('origSize');
-    const newSize = document.getElementById('newSize');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const navUploadBtn = document.getElementById('navUploadBtn');
+    const dropZone = document.getElementById('dropZone');
+    const studioCanvas = document.getElementById('studioCanvas');
+    const inputQuality = document.getElementById('inputQuality');
+    const lblQuality = document.getElementById('lblQuality');
+    const inputBrightness = document.getElementById('inputBrightness');
+    const lblBrightness = document.getElementById('lblBrightness');
+    const inputContrast = document.getElementById('inputContrast');
+    const lblContrast = document.getElementById('lblContrast');
+    const chkGrayscale = document.getElementById('chkGrayscale');
+    const inputWatermark = document.getElementById('inputWatermark');
+    const btnDownload = document.getElementById('btnDownload');
 
-    let currentFile = null;
-    let processedBlob = null;
-
-    dropArea.addEventListener('click', () => fileInput.click());
-    dropArea.addEventListener('dragover', (e) => e.preventDefault());
-    dropArea.addEventListener('drop', (e) => {
+    // Trigger Upload
+    navUploadBtn.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => e.preventDefault());
+    dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
     });
-
     fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length) handleFile(e.target.files[0]);
+      if (e.target.files.length) loadFile(e.target.files[0]);
     });
 
-    qualityRange.addEventListener('input', (e) => {
-      qualityLabel.textContent = `${e.target.value}%`;
-      processImage();
+    function loadFile(file) {
+      if (!file.type.startsWith('image/')) return alert('Pilih berkas foto/gambar!');
+      document.getElementById('statOrigSize').textContent = formatBytes(file.size);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        activeImage = new Image();
+        activeImage.onload = () => {
+          targetWidth = activeImage.width;
+          targetHeight = activeImage.height;
+          dropZone.classList.add('hidden');
+          studioCanvas.classList.remove('hidden');
+          renderCanvas();
+        };
+        activeImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Transformasi
+    document.getElementById('btnRotate').addEventListener('click', () => {
+      rotationDeg = (rotationDeg + 90) % 360;
+      renderCanvas();
+    });
+    document.getElementById('btnFlipH').addEventListener('click', () => {
+      isFlipped = !isFlipped;
+      renderCanvas();
+    });
+    document.getElementById('btnReset').addEventListener('click', () => {
+      rotationDeg = 0;
+      isFlipped = false;
+      inputBrightness.value = 100;
+      inputContrast.value = 100;
+      chkGrayscale.checked = false;
+      inputWatermark.value = '';
+      lblBrightness.textContent = '100%';
+      lblContrast.textContent = '100%';
+      if (activeImage) {
+        targetWidth = activeImage.width;
+        targetHeight = activeImage.height;
+      }
+      renderCanvas();
     });
 
-    formatSelect.addEventListener('change', processImage);
-    widthInput.addEventListener('input', processImage);
+    inputQuality.addEventListener('input', (e) => {
+      lblQuality.textContent = e.target.value + '%';
+      renderCanvas();
+    });
+    inputBrightness.addEventListener('input', (e) => {
+      lblBrightness.textContent = e.target.value + '%';
+      renderCanvas();
+    });
+    inputContrast.addEventListener('input', (e) => {
+      lblContrast.textContent = e.target.value + '%';
+      renderCanvas();
+    });
+    chkGrayscale.addEventListener('change', renderCanvas);
+    inputWatermark.addEventListener('input', renderCanvas);
+
+    function setFormat(fmt) {
+      outFormat = fmt;
+      ['btnFmtWebp', 'btnFmtJpg', 'btnFmtPng'].forEach(id => {
+        document.getElementById(id).className = 'py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400';
+      });
+      if (fmt === 'image/webp') {
+        document.getElementById('btnFmtWebp').className = 'py-2 text-xs font-bold rounded-xl border border-blue-500 bg-blue-600/20 text-blue-300';
+        document.getElementById('statFormat').textContent = 'WebP';
+      } else if (fmt === 'image/jpeg') {
+        document.getElementById('btnFmtJpg').className = 'py-2 text-xs font-bold rounded-xl border border-blue-500 bg-blue-600/20 text-blue-300';
+        document.getElementById('statFormat').textContent = 'JPG';
+      } else {
+        document.getElementById('btnFmtPng').className = 'py-2 text-xs font-bold rounded-xl border border-blue-500 bg-blue-600/20 text-blue-300';
+        document.getElementById('statFormat').textContent = 'PNG';
+      }
+      renderCanvas();
+    }
+
+    function applyRatioPreset(w, h) {
+      if (!activeImage) return;
+      if (w === 0 && h === 0) {
+        targetWidth = activeImage.width;
+        targetHeight = activeImage.height;
+      } else {
+        targetWidth = w;
+        targetHeight = h;
+      }
+      renderCanvas();
+    }
+
+    function renderCanvas() {
+      if (!activeImage) return;
+      const ctx = studioCanvas.getContext('2d');
+      const isSwapped = rotationDeg === 90 || rotationDeg === 270;
+      studioCanvas.width = isSwapped ? targetHeight : targetWidth;
+      studioCanvas.height = isSwapped ? targetWidth : targetHeight;
+
+      ctx.save();
+      ctx.translate(studioCanvas.width / 2, studioCanvas.height / 2);
+      ctx.rotate((rotationDeg * Math.PI) / 180);
+      if (isFlipped) ctx.scale(-1, 1);
+
+      // Filter Pencahayaan
+      const b = inputBrightness.value;
+      const c = inputContrast.value;
+      const g = chkGrayscale.checked ? 100 : 0;
+      ctx.filter = `brightness(${b}%) contrast(${c}%) grayscale(${g}%)`;
+
+      ctx.drawImage(activeImage, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+      ctx.restore();
+
+      // Watermark
+      const watermark = inputWatermark.value.trim();
+      if (watermark) {
+        ctx.font = `bold ${Math.max(18, studioCanvas.width * 0.03)}px sans-serif`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.textAlign = 'right';
+        ctx.fillText(watermark, studioCanvas.width - 24, studioCanvas.height - 24);
+      }
+
+      const q = parseInt(inputQuality.value) / 100;
+      studioCanvas.toBlob((blob) => {
+        finalBlob = blob;
+        document.getElementById('statNewSize').textContent = formatBytes(blob.size);
+        document.getElementById('statDimensions').textContent = `${studioCanvas.width} × ${studioCanvas.height} px`;
+        btnDownload.removeAttribute('disabled');
+      }, outFormat, q);
+    }
 
     function formatBytes(bytes) {
       if (!bytes) return '0 B';
@@ -108,52 +359,13 @@
       return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
     }
 
-    function handleFile(file) {
-      if (!file.type.startsWith('image/')) return alert('Pilih file gambar!');
-      currentFile = file;
-      origSize.textContent = formatBytes(file.size);
-      processImage();
-    }
-
-    function processImage() {
-      if (!currentFile) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let targetWidth = parseInt(widthInput.value) || img.width;
-          let targetHeight = (img.height / img.width) * targetWidth;
-
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-          const mimeType = formatSelect.value;
-          const quality = parseInt(qualityRange.value) / 100;
-
-          canvas.toBlob((blob) => {
-            processedBlob = blob;
-            imagePreview.src = URL.createObjectURL(blob);
-            newSize.textContent = formatBytes(blob.size);
-            previewContainer.classList.remove('hidden');
-          }, mimeType, quality);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(currentFile);
-    }
-
-    downloadBtn.addEventListener('click', () => {
-      if (!processedBlob) return;
-      const ext = formatSelect.value === 'image/jpeg' ? 'jpg' : formatSelect.value === 'image/webp' ? 'webp' : 'png';
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(processedBlob);
-      link.download = `gegedigi-result.${ext}`;
-      link.click();
+    btnDownload.addEventListener('click', () => {
+      if (!finalBlob) return;
+      const ext = outFormat === 'image/webp' ? 'webp' : outFormat === 'image/jpeg' ? 'jpg' : 'png';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(finalBlob);
+      a.download = `gegedigi-pro-${Date.now()}.${ext}`;
+      a.click();
     });
   </script>
 </body>
